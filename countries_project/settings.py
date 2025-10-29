@@ -97,13 +97,14 @@ if USE_MYSQL:
         if DATABASE_URL:
             try:
                 import dj_database_url
-                DATABASES = {
-                    'default': dj_database_url.config(
-                        default=DATABASE_URL,
-                        conn_max_age=600,
-                        ssl_require=False  # Kinsta MySQL doesn't require SSL CA
-                    )
-                }
+                db_config = dj_database_url.config(
+                    default=DATABASE_URL,
+                    conn_max_age=600,
+                    ssl_require=False  # Kinsta MySQL doesn't require SSL CA
+                )
+                # Force MySQL engine (dj-database-url might detect postgres incorrectly)
+                db_config['ENGINE'] = 'django.db.backends.mysql'
+                DATABASES = {'default': db_config}
                 print("[OK] Using MySQL database (from DATABASE_URL)")
             except ImportError:
                 # If dj-database-url is not installed, parse manually
