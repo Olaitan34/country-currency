@@ -1,0 +1,253 @@
+{
+  "info": {
+    "name": "Country Currency API",
+    "description": "Complete API testing for Country Currency & Exchange Rate API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Setup",
+      "item": [
+        {
+          "name": "POST Refresh Countries",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/countries/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "refresh"]
+            },
+            "description": "Fetch all countries from external APIs and cache in database"
+          }
+        },
+        {
+          "name": "GET Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["status"]
+            },
+            "description": "Get total countries and last refresh timestamp"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. List & Filters",
+      "item": [
+        {
+          "name": "GET All Countries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries",
+              "host": ["{{base_url}}"],
+              "path": ["countries"]
+            }
+          }
+        },
+        {
+          "name": "GET Filter by Region (Africa)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries?region=Africa",
+              "host": ["{{base_url}}"],
+              "path": ["countries"],
+              "query": [
+                {
+                  "key": "region",
+                  "value": "Africa"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Filter by Currency (NGN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries?currency=NGN",
+              "host": ["{{base_url}}"],
+              "path": ["countries"],
+              "query": [
+                {
+                  "key": "currency",
+                  "value": "NGN"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Sort by GDP Desc",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries?sort=gdp_desc",
+              "host": ["{{base_url}}"],
+              "path": ["countries"],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "gdp_desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Sort by GDP Asc",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries?sort=gdp_asc",
+              "host": ["{{base_url}}"],
+              "path": ["countries"],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "gdp_asc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET Combined Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries?region=Africa&sort=gdp_desc",
+              "host": ["{{base_url}}"],
+              "path": ["countries"],
+              "query": [
+                {
+                  "key": "region",
+                  "value": "Africa"
+                },
+                {
+                  "key": "sort",
+                  "value": "gdp_desc"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Single Country",
+      "item": [
+        {
+          "name": "GET Country (Nigeria)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries/Nigeria",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "Nigeria"]
+            }
+          }
+        },
+        {
+          "name": "GET Country (Ghana)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries/Ghana",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "Ghana"]
+            }
+          }
+        },
+        {
+          "name": "GET Country (United States)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries/United States",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "United States"]
+            }
+          }
+        },
+        {
+          "name": "GET Country Not Found (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries/InvalidCountry",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "InvalidCountry"]
+            },
+            "description": "Should return 404 error"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Delete",
+      "item": [
+        {
+          "name": "DELETE Country",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries/TestCountry",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "TestCountry"]
+            },
+            "description": "Delete a country record"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Image",
+      "item": [
+        {
+          "name": "GET Summary Image",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/countries/image",
+              "host": ["{{base_url}}"],
+              "path": ["countries", "image"]
+            },
+            "description": "Get generated summary image (PNG)"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
