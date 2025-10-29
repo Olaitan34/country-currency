@@ -88,7 +88,7 @@ USE_MYSQL = os.getenv('USE_MYSQL', 'True').lower() == 'true'
 DATABASE_URL = os.getenv('DATABASE_URL', None)
 
 if USE_MYSQL:
-    # Try to use MySQL with Aiven credentials
+    # Try to use MySQL with Kinsta credentials
     try:
         import pymysql
         pymysql.install_as_MySQLdb()
@@ -101,52 +101,46 @@ if USE_MYSQL:
                     'default': dj_database_url.config(
                         default=DATABASE_URL,
                         conn_max_age=600,
-                        ssl_require=True
+                        ssl_require=False  # Kinsta MySQL doesn't require SSL CA
                     )
                 }
-                print("✅ Using MySQL database (from DATABASE_URL)")
+                print("[OK] Using MySQL database (from DATABASE_URL)")
             except ImportError:
                 # If dj-database-url is not installed, parse manually
-                print("⚠️ dj-database-url not installed, using individual credentials")
+                print("[WARN] dj-database-url not installed, using individual credentials")
                 DATABASES = {
                     'default': {
                         'ENGINE': 'django.db.backends.mysql',
-                        'NAME': os.getenv('DB_NAME', 'defaultdb'),
-                        'USER': os.getenv('DB_USER', 'avnadmin'),
+                        'NAME': os.getenv('DB_NAME', 'country-currency'),
+                        'USER': os.getenv('DB_USER', 'Olaitan34'),
                         'PASSWORD': os.getenv('DB_PASSWORD', ''),
-                        'HOST': os.getenv('DB_HOST', 'mysql-countries2-contries-currency1.d.aivencloud.com'),
-                        'PORT': os.getenv('DB_PORT', '18360'),
+                        'HOST': os.getenv('DB_HOST', 'europe-west4-001.proxy.kinsta.app'),
+                        'PORT': os.getenv('DB_PORT', '30156'),
                         'OPTIONS': {
-                            'ssl': {
-                                'ssl-mode': 'REQUIRED',
-                            },
                             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                         },
                     }
                 }
-                print("✅ Using MySQL database (from individual credentials)")
+                print("[OK] Using MySQL database (from individual credentials)")
         else:
             # Option 2: Use individual credentials
             DATABASES = {
                 'default': {
                     'ENGINE': 'django.db.backends.mysql',
-                    'NAME': os.getenv('DB_NAME', 'defaultdb'),
-                    'USER': os.getenv('DB_USER', 'avnadmin'),
+                    'NAME': os.getenv('DB_NAME', 'country-currency'),
+                    'USER': os.getenv('DB_USER', 'Olaitan34'),
                     'PASSWORD': os.getenv('DB_PASSWORD', ''),
-                    'HOST': os.getenv('DB_HOST', 'mysql-countries2-contries-currency1.d.aivencloud.com'),
-                    'PORT': os.getenv('DB_PORT', '18360'),
+                    'HOST': os.getenv('DB_HOST', 'europe-west4-001.proxy.kinsta.app'),
+                    'PORT': os.getenv('DB_PORT', '30156'),
                     'OPTIONS': {
-                        'ssl': {
-                            'ssl-mode': 'REQUIRED',
-                        },
                         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
                     },
                 }
             }
-            print("✅ Using MySQL database (from individual credentials)")
+            print("[OK] Using MySQL database (from individual credentials)")
     except (ImportError, Exception) as e:
-        print(f"⚠️ MySQL connection failed: {e}")
-        print("🔄 Falling back to SQLite")
+        print(f"[WARN] MySQL connection failed: {e}")
+        print("[INFO] Falling back to SQLite")
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
@@ -161,40 +155,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-    print("ℹ️ Using SQLite database (set USE_MYSQL=True to use MySQL)")
-#
-# If an Aiven CA certificate is provided via env var (SSL_CA) or path (SSL_CA_PATH),
-# write the PEM to a file (if provided as env) and configure DB SSL options so
-# PyMySQL/mysqlclient can verify the server certificate.
-SSL_CA_ENV = os.getenv('SSL_CA')  # PEM contents (multi-line) if provided
-SSL_CA_PATH = os.getenv('SSL_CA_PATH')  # Path on disk where CA PEM is available
-
-if SSL_CA_ENV and not SSL_CA_PATH:
-    # write the provided PEM to a file under BASE_DIR/secrets/aiven-ca.pem
-    secret_dir = os.path.join(BASE_DIR, 'secrets')
-    os.makedirs(secret_dir, exist_ok=True)
-    ca_file = os.path.join(secret_dir, 'aiven-ca.pem')
-    with open(ca_file, 'w', encoding='utf-8') as f:
-        f.write(SSL_CA_ENV)
-    SSL_CA_PATH = ca_file
-
-# If we have a CA path and are using MySQL, attach it to DATABASES options
-if USE_MYSQL and os.getenv('USE_MYSQL', 'True').lower() == 'true' and SSL_CA_PATH:
-    try:
-        default_db = globals().get('DATABASES', {}).get('default', {})
-        engine = default_db.get('ENGINE', '')
-        if engine and 'mysql' in engine:
-            opts = default_db.setdefault('OPTIONS', {})
-            ssl_opts = opts.get('ssl', {}) if isinstance(opts.get('ssl', {}), dict) else {}
-            # set 'ca' which PyMySQL and mysqlclient accept
-            ssl_opts['ca'] = SSL_CA_PATH
-            # keep existing ssl-mode if present
-            opts['ssl'] = ssl_opts
-            default_db['OPTIONS'] = opts
-            DATABASES['default'] = default_db
-    except Exception:
-        # avoid crashing settings; log to stdout for debugging
-        print('⚠️ Could not attach SSL CA to DATABASES options')
+    print("[INFO] Using SQLite database (set USE_MYSQL=True to use MySQL)")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
