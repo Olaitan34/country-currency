@@ -162,9 +162,39 @@ else:
         }
     }
     print("ℹ️ Using SQLite database (set USE_MYSQL=True to use MySQL)")
+#
+# If an Aiven CA certificate is provided via env var (SSL_CA) or path (SSL_CA_PATH),
+# write the PEM to a file (if provided as env) and configure DB SSL options so
+# PyMySQL/mysqlclient can verify the server certificate.
+SSL_CA_ENV = os.getenv('SSL_CA')  # PEM contents (multi-line) if provided
+SSL_CA_PATH = os.getenv('SSL_CA_PATH')  # Path on disk where CA PEM is available
 
+if SSL_CA_ENV and not SSL_CA_PATH:
+    # write the provided PEM to a file under BASE_DIR/secrets/aiven-ca.pem
+    secret_dir = os.path.join(BASE_DIR, 'secrets')
+    os.makedirs(secret_dir, exist_ok=True)
+    ca_file = os.path.join(secret_dir, 'aiven-ca.pem')
+    with open(ca_file, 'w', encoding='utf-8') as f:
+        f.write(SSL_CA_ENV)
+    SSL_CA_PATH = ca_file
 
-
+# If we have a CA path and are using MySQL, attach it to DATABASES options
+if USE_MYSQL and os.getenv('USE_MYSQL', 'True').lower() == 'true' and SSL_CA_PATH:
+    try:
+        default_db = globals().get('DATABASES', {}).get('default', {})
+        engine = default_db.get('ENGINE', '')
+        if engine and 'mysql' in engine:
+            opts = default_db.setdefault('OPTIONS', {})
+            ssl_opts = opts.get('ssl', {}) if isinstance(opts.get('ssl', {}), dict) else {}
+            # set 'ca' which PyMySQL and mysqlclient accept
+            ssl_opts['ca'] = SSL_CA_PATH
+            # keep existing ssl-mode if present
+            opts['ssl'] = ssl_opts
+            default_db['OPTIONS'] = opts
+            DATABASES['default'] = default_db
+    except Exception:
+        # avoid crashing settings; log to stdout for debugging
+        print('⚠️ Could not attach SSL CA to DATABASES options')
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
