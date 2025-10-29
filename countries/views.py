@@ -8,7 +8,6 @@ from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, RetrieveAPIView
 from .serializers import CountrySerializer
 from .models import Country
 from django.http import FileResponse
@@ -137,23 +136,25 @@ class RefreshCountriesView(APIView):
 
         return Response(
             {
-                "message": "Refresh successful",
+                "message": "Countries refreshed successfully",
                 "total_countries": total,
-                "last_refreshed_at": rs.last_refreshed_at,
             },
             status=status.HTTP_200_OK,
         )
 
-class CountryListView(ListAPIView):
-    serializer_class = CountrySerializer
-    queryset = Country.objects.all()
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        region = self.request.query_params.get('region')
-        currency = self.request.query_params.get('currency')
-        sort = self.request.query_params.get('sort')
-
+class CountryListView(APIView):
+    """
+    Get all countries with optional filters and sorting.
+    Returns a plain array (not paginated) to match task requirements.
+    """
+    
+    def get(self, request):
+        qs = Country.objects.all()
+        
+        # Apply filters
+        region = request.query_params.get('region')
+        currency = request.query_params.get('currency')
+        sort = request.query_params.get('sort')
 
         if region:
             qs = qs.filter(region__iexact=region)
@@ -163,7 +164,10 @@ class CountryListView(ListAPIView):
             qs = qs.order_by('-estimated_gdp')
         elif sort == 'gdp_asc':
             qs = qs.order_by('estimated_gdp')
-        return qs
+        
+        serializer = CountrySerializer(qs, many=True)
+        # Return plain array, not paginated response
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CountryCreateView(APIView):
