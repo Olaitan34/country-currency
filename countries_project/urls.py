@@ -29,11 +29,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # Country CRUD endpoints
-    path('countries/refresh/', RefreshCountriesView.as_view(), name='refresh-countries'),
-    path('countries/image/', SummaryImageView.as_view(), name='summary-image'),
-    path('countries/<str:name>/', CountryDetailView.as_view(), name='country-detail'),
-    path('countries/', CountryListView.as_view(), name='country-list'),
+    path('countries/refresh', RefreshCountriesView.as_view(), name='refresh-countries'),
+    path('countries/image', SummaryImageView.as_view(), name='summary-image'),
+    path('countries/<str:name>', CountryDetailView.as_view(), name='country-detail'),
+    path('countries', CountryListView.as_view(), name='country-list'),
     
     # Status endpoint
-    path('status/', StatusView.as_view(), name='status'),
+    path('status', StatusView.as_view(), name='status'),
 ]
